@@ -302,6 +302,10 @@ cron.schedule('0 0 20 * * *', async () => {
     timezone: "Asia/Singapore"
 });
 
+cron.schedule('*/14 * * * *', () => {
+    console.log("stay awake");
+})
+
 app.listen(port, () => {
     console.log(`Tele Bot listening on port ${port}`);
 });
