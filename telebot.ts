@@ -23,10 +23,6 @@ bot.command("subscribe", async (ctx) => {
     bot.api.sendMessage(ctx.chat.id, "Subscribed to bot!");
 });
 
-bot.command("unsubscribe", async (ctx) => {
-    await deleteUser(ctx.chat.id);
-    bot.api.sendMessage(ctx.chat.id, "Unsubscribed to bot");
-})
 // INIT BOT=========================================================
 
 // DATA=============================================================
