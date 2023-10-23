@@ -299,6 +299,7 @@ bot.callbackQuery("Submit!", async (ctx) => {
 // SUBMIT===========================================================
 
 const sendForm = async (id: number) => {
+    await bot.api.sendMessage(id, "Remember: please do not double click the buttons!");
     await bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
     await bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
     await bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
@@ -307,6 +308,7 @@ const sendForm = async (id: number) => {
 }
 
 const monForm = async (id: number) => {
+    await bot.api.sendMessage(id, "Remember: please do not double click the buttons!");
     await bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
     await bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
     await bot.api.sendMessage(id, "Did you have dinner yesterday?", { reply_markup: dinnerFeedback });
@@ -314,6 +316,7 @@ const monForm = async (id: number) => {
 }
 
 const friForm = async (id: number) => {
+    await bot.api.sendMessage(id, "Remember: please do not double click the buttons!");
     await bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
     await bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
     await bot.api.sendMessage(id, "Did you have dinner yesterday?", { reply_markup: dinnerFeedback });
@@ -321,12 +324,14 @@ const friForm = async (id: number) => {
 }
 
 const satForm = async (id: number) => {
+    await bot.api.sendMessage(id, "Remember: please do not double click the buttons!");
     await bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
     await bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
     await bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit })
 }
 
 const sunForm = async (id: number) => {
+    await bot.api.sendMessage(id, "Remember: please do not double click the buttons!");
     await bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
     await bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
     await bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
