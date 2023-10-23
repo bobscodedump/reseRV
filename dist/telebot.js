@@ -20,7 +20,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const express = require('express');
 dotenv_1.default.config();
 const app = express();
-const port = 3000;
+const port = 80;
 // INIT BOT=========================================================
 const botToken = process.env.BOT_TOKEN ? process.env.BOT_TOKEN : "";
 if (!botToken) {
@@ -30,10 +30,6 @@ const bot = new grammy_1.Bot(botToken);
 bot.command("subscribe", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield writeChatId(ctx.chat.id);
     bot.api.sendMessage(ctx.chat.id, "Subscribed to bot!");
-}));
-bot.command("unsubscribe", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield deleteUser(ctx.chat.id);
-    bot.api.sendMessage(ctx.chat.id, "Unsubscribed to bot");
 }));
 ;
 const submitData = (data, chatId) => __awaiter(void 0, void 0, void 0, function* () {

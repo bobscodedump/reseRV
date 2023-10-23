@@ -7,7 +7,7 @@ const express = require('express');
 
 dotenv.config();
 const app = express();
-const port = 3000;
+const port = 80;
 
 // INIT BOT=========================================================
 const botToken = process.env.BOT_TOKEN ? process.env.BOT_TOKEN as string : "";
@@ -297,10 +297,6 @@ cron.schedule('0 0 20 * * *', async () => {
 }, {
     timezone: "Asia/Singapore"
 });
-
-cron.schedule('*/14 * * * *', () => {
-    console.log("stay awake");
-})
 
 app.listen(port, () => {
     console.log(`Tele Bot listening on port ${port}`);
