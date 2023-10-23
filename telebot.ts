@@ -18,18 +18,19 @@ if (!botToken) {
 
 const bot = new Bot(botToken)
 
-bot.command("subscribe", async (ctx) => {
-    await writeChatId(ctx.chat.id);
-    bot.api.sendMessage(ctx.chat.id, "Subscribed to bot!");
-});
+// bot.command("subscribe", async (ctx) => {
+//     await writeChatId(ctx.chat.id);
+//     bot.api.sendMessage(ctx.chat.id, "Subscribed to bot!");
+// });
 
 bot.command("unsubscribe", async (ctx) => {
     await deleteUser(ctx.chat.id);
     bot.api.sendMessage(ctx.chat.id, "Unsubscribed :(");
 })
 
-bot.command("start", ctx => {
-    bot.api.sendMessage(ctx.chat.id, welcomeMessage);
+bot.command("start", async (ctx) => {
+    await writeChatId(ctx.chat.id);
+    bot.api.sendMessage(ctx.chat.id, "Subscribed to bot!");
 })
 
 bot.command("help", ctx => {
@@ -436,7 +437,7 @@ const welcomeMessage = `🍽️ say HELLO to reseRV 🍝
 
 the reseRV telebot streamlines the existing dining hall meal reservation system by making it more accessible and easy to use.
 
-Use /subscribe to subscribe to the bot, and a poll will be sent to you daily at 8pm.
+Use /start to subscribe to the bot, and a poll will be sent to you daily at 8pm.
 
 Click submit once you have answered all 4 polls!
 
@@ -445,5 +446,7 @@ Click submit once you have answered all 4 polls!
 With just 4 clicks each day, together we can help RVRC reduce food waste!
 
 (/unsubscribe to unsubscribe to the bot)
+
+/help to get help!
 
 Reserve with reseRV!`
