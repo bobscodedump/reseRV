@@ -31,6 +31,19 @@ bot.command("subscribe", (ctx) => __awaiter(void 0, void 0, void 0, function* ()
     yield writeChatId(ctx.chat.id);
     bot.api.sendMessage(ctx.chat.id, "Subscribed to bot!");
 }));
+bot.command("unsubscribe", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield deleteUser(ctx.chat.id);
+    bot.api.sendMessage(ctx.chat.id, "Unsubscribed :(");
+}));
+bot.command("start", ctx => {
+    bot.api.sendMessage(ctx.chat.id, welcomeMessage);
+});
+bot.command("help", ctx => {
+    bot.api.sendMessage(ctx.chat.id, welcomeMessage);
+});
+bot.command("bottest", ctx => {
+    sendForm(ctx.chat.id);
+});
 ;
 const submitData = (data, chatId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -46,15 +59,16 @@ let currData = {
     breakfastTomorrow: "",
     dinnerTomorrow: "",
     breakfastFeedback: "",
-    dinnerFeedback: ""
+    dinnerFeedback: "",
+    day: -1
 };
 // DATA=============================================================
 // BREAKFAST===========================================================
-bot.command("bfast", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.reply("Are you having breakfast tomorrow?", {
-        reply_markup: breakfast,
-    });
-}));
+// bot.command("bfast", async (ctx) => {
+//     await ctx.reply("Are you having breakfast tomorrow?", {
+//         reply_markup: breakfast,
+//     });
+// })
 bot.callbackQuery("bfast-yes", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("yes");
     currData.breakfastTomorrow = "yes";
@@ -82,11 +96,11 @@ const breakfast = new grammy_1.InlineKeyboard()
     .text("Idk", "bfast-idk");
 // BREAKFAST===========================================================
 // DINNER==============================================================
-bot.command("dinz", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.reply("Are you having dinner tomorrow?", {
-        reply_markup: dinner,
-    });
-}));
+// bot.command("dinz", async (ctx) => {
+//     await ctx.reply("Are you having dinner tomorrow?", {
+//         reply_markup: dinner,
+//     });
+// })
 bot.callbackQuery("dinner-yes", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-yes");
     currData.dinnerTomorrow = "yes";
@@ -114,11 +128,11 @@ const dinner = new grammy_1.InlineKeyboard()
     .text("Idk", "dinner-idk");
 // DINNER==============================================================
 // BREAKFAST FEEDBACK==================================================
-bot.command("bfastFeedback", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.reply("What did you have for breakfast yesterday?", {
-        reply_markup: breakfastFeedback,
-    });
-}));
+// bot.command("bfastFeedback", async (ctx) => {
+//     await ctx.reply("What did you have for breakfast yesterday?", {
+//         reply_markup: breakfastFeedback,
+//     });
+// })
 bot.callbackQuery("bfast-asian", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("bfast-asian");
     currData.breakfastFeedback = "asian";
@@ -178,11 +192,11 @@ const breakfastFeedback = new grammy_1.InlineKeyboard()
     .text("Cereal", "bfast-cereal");
 // BREAKFAST FEEDBACK==================================================
 // DINNER FEEDBACK==================================================
-bot.command("dinnerFeedback", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.reply("What did you have for dinner yesterday?", {
-        reply_markup: dinnerFeedback,
-    });
-}));
+// bot.command("dinnerFeedback", async (ctx) => {
+//     await ctx.reply("What did you have for dinner yesterday?", {
+//         reply_markup: dinnerFeedback,
+//     });
+// })
 bot.callbackQuery("dinner-asian", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-asian");
     currData.dinnerFeedback = "asian";
@@ -252,6 +266,7 @@ const dinnerFeedback = new grammy_1.InlineKeyboard()
 // SUBMIT===========================================================
 const submit = new grammy_1.InlineKeyboard().text("Submit!");
 bot.callbackQuery("Submit!", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    currData.day = new Date().getDay();
     if (ctx.chat)
         yield submitData(currData, ctx.chat.id);
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
@@ -259,7 +274,8 @@ bot.callbackQuery("Submit!", (ctx) => __awaiter(void 0, void 0, void 0, function
         breakfastTomorrow: "",
         dinnerTomorrow: "",
         breakfastFeedback: "",
-        dinnerFeedback: ""
+        dinnerFeedback: "",
+        day: -1
     };
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Thanks for your submission!");
@@ -272,13 +288,85 @@ const sendForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
     yield bot.api.sendMessage(id, "Did you have dinner yesterday?", { reply_markup: dinnerFeedback });
     yield bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit });
 });
+const monForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
+    yield bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
+    yield bot.api.sendMessage(id, "Did you have dinner yesterday?", { reply_markup: dinnerFeedback });
+    yield bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit });
+});
+const friForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
+    yield bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
+    yield bot.api.sendMessage(id, "Did you have dinner yesterday?", { reply_markup: dinnerFeedback });
+    yield bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit });
+});
+const satForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
+    yield bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
+    yield bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit });
+});
+const sunForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
+    yield bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
+    yield bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
+    yield bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit });
+});
 bot.start();
-cron.schedule('0 0 20 * * *', () => __awaiter(void 0, void 0, void 0, function* () {
+// Mon
+cron.schedule('0 20 * * 1', () => __awaiter(void 0, void 0, void 0, function* () {
+    const data = yield retrieveIds();
+    if (data) {
+        for (const id of data) {
+            console.log(id);
+            monForm(id);
+        }
+    }
+}), {
+    timezone: "Asia/Singapore"
+});
+// Tues-Thurs
+cron.schedule('0 20 * * 2-4', () => __awaiter(void 0, void 0, void 0, function* () {
     const data = yield retrieveIds();
     if (data) {
         for (const id of data) {
             console.log(id);
             sendForm(id);
+        }
+    }
+}), {
+    timezone: "Asia/Singapore"
+});
+// Friday
+cron.schedule('0 20 * * 5', () => __awaiter(void 0, void 0, void 0, function* () {
+    const data = yield retrieveIds();
+    if (data) {
+        for (const id of data) {
+            console.log(id);
+            friForm(id);
+        }
+    }
+}), {
+    timezone: "Asia/Singapore"
+});
+// Saturday
+cron.schedule('0 20 * * 6', () => __awaiter(void 0, void 0, void 0, function* () {
+    const data = yield retrieveIds();
+    if (data) {
+        for (const id of data) {
+            console.log(id);
+            satForm(id);
+        }
+    }
+}), {
+    timezone: "Asia/Singapore"
+});
+// Sunday
+cron.schedule('0 20 * * 7', () => __awaiter(void 0, void 0, void 0, function* () {
+    const data = yield retrieveIds();
+    if (data) {
+        for (const id of data) {
+            console.log(id);
+            sunForm(id);
         }
     }
 }), {
@@ -315,3 +403,18 @@ const retrieveIds = () => __awaiter(void 0, void 0, void 0, function* () {
 const deleteUser = (chatId) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, firestore_1.deleteDoc)((0, firestore_1.doc)(firebase_config_1.db, "users", chatId.toString()));
 });
+const welcomeMessage = `🍽️ say HELLO to reseRV 🍝
+
+the reseRV telebot streamlines the existing dining hall meal reservation system by making it more accessible and easy to use.
+
+Use /subscribe to subscribe to the bot, and a poll will be sent to you daily at 8pm.
+
+Click submit once you have answered all 4 polls!
+
+(Please do not double-click the buttons as it may cause the server to crash!)
+
+With just 4 clicks each day, together we can help RVRC reduce food waste!
+
+(/unsubscribe to unsubscribe to the bot)
+
+Reserve with reseRV!`;

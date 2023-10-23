@@ -1,5 +1,5 @@
-import { Bot, GrammyError, HttpError, InlineKeyboard, Keyboard } from "grammy";
-import { collection, addDoc, doc, getDoc, setDoc, query, getDocs, deleteDoc } from "firebase/firestore";
+import { Bot, InlineKeyboard, } from "grammy";
+import { collection, doc, setDoc, query, getDocs, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase-config";
 const cron = require('node-cron');
 import dotenv from 'dotenv';
@@ -23,6 +23,23 @@ bot.command("subscribe", async (ctx) => {
     bot.api.sendMessage(ctx.chat.id, "Subscribed to bot!");
 });
 
+bot.command("unsubscribe", async (ctx) => {
+    await deleteUser(ctx.chat.id);
+    bot.api.sendMessage(ctx.chat.id, "Unsubscribed :(");
+})
+
+bot.command("start", ctx => {
+    bot.api.sendMessage(ctx.chat.id, welcomeMessage);
+})
+
+bot.command("help", ctx => {
+    bot.api.sendMessage(ctx.chat.id, welcomeMessage);
+})
+
+bot.command("bottest", ctx => {
+    sendForm(ctx.chat.id);
+})
+
 // INIT BOT=========================================================
 
 // DATA=============================================================
@@ -31,6 +48,7 @@ interface data {
     dinnerTomorrow: string;
     breakfastFeedback: string;
     dinnerFeedback: string;
+    day: number;
 };
 
 const submitData = async (data: data, chatId: number) => {
@@ -47,16 +65,17 @@ let currData: data = {
     breakfastTomorrow: "",
     dinnerTomorrow: "",
     breakfastFeedback: "",
-    dinnerFeedback: ""
+    dinnerFeedback: "",
+    day: -1
 }
 // DATA=============================================================
 // BREAKFAST===========================================================
 
-bot.command("bfast", async (ctx) => {
-    await ctx.reply("Are you having breakfast tomorrow?", {
-        reply_markup: breakfast,
-    });
-})
+// bot.command("bfast", async (ctx) => {
+//     await ctx.reply("Are you having breakfast tomorrow?", {
+//         reply_markup: breakfast,
+//     });
+// })
 
 bot.callbackQuery("bfast-yes", async (ctx) => {
     console.log("yes");
@@ -87,11 +106,11 @@ const breakfast = new InlineKeyboard()
 // BREAKFAST===========================================================
 // DINNER==============================================================
 
-bot.command("dinz", async (ctx) => {
-    await ctx.reply("Are you having dinner tomorrow?", {
-        reply_markup: dinner,
-    });
-})
+// bot.command("dinz", async (ctx) => {
+//     await ctx.reply("Are you having dinner tomorrow?", {
+//         reply_markup: dinner,
+//     });
+// })
 
 bot.callbackQuery("dinner-yes", async (ctx) => {
     console.log("dinner-yes");
@@ -121,11 +140,11 @@ const dinner = new InlineKeyboard()
 
 // DINNER==============================================================
 // BREAKFAST FEEDBACK==================================================
-bot.command("bfastFeedback", async (ctx) => {
-    await ctx.reply("What did you have for breakfast yesterday?", {
-        reply_markup: breakfastFeedback,
-    });
-})
+// bot.command("bfastFeedback", async (ctx) => {
+//     await ctx.reply("What did you have for breakfast yesterday?", {
+//         reply_markup: breakfastFeedback,
+//     });
+// })
 
 bot.callbackQuery("bfast-asian", async (ctx) => {
     console.log("bfast-asian");
@@ -187,11 +206,11 @@ const breakfastFeedback = new InlineKeyboard()
 
 // BREAKFAST FEEDBACK==================================================
 // DINNER FEEDBACK==================================================
-bot.command("dinnerFeedback", async (ctx) => {
-    await ctx.reply("What did you have for dinner yesterday?", {
-        reply_markup: dinnerFeedback,
-    });
-})
+// bot.command("dinnerFeedback", async (ctx) => {
+//     await ctx.reply("What did you have for dinner yesterday?", {
+//         reply_markup: dinnerFeedback,
+//     });
+// })
 
 bot.callbackQuery("dinner-asian", async (ctx) => {
     console.log("dinner-asian");
@@ -264,13 +283,15 @@ const dinnerFeedback = new InlineKeyboard()
 const submit = new InlineKeyboard().text("Submit!");
 
 bot.callbackQuery("Submit!", async (ctx) => {
+    currData.day = new Date().getDay();
     if (ctx.chat) await submitData(currData, ctx.chat.id);
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     currData = {
         breakfastTomorrow: "",
         dinnerTomorrow: "",
         breakfastFeedback: "",
-        dinnerFeedback: ""
+        dinnerFeedback: "",
+        day: -1
     }
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Thanks for your submission!");
 })
@@ -284,14 +305,94 @@ const sendForm = async (id: number) => {
     await bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit })
 }
 
+const monForm = async (id: number) => {
+    await bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
+    await bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
+    await bot.api.sendMessage(id, "Did you have dinner yesterday?", { reply_markup: dinnerFeedback });
+    await bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit })
+}
+
+const friForm = async (id: number) => {
+    await bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
+    await bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
+    await bot.api.sendMessage(id, "Did you have dinner yesterday?", { reply_markup: dinnerFeedback });
+    await bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit })
+}
+
+const satForm = async (id: number) => {
+    await bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
+    await bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
+    await bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit })
+}
+
+const sunForm = async (id: number) => {
+    await bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
+    await bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
+    await bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
+    await bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit })
+}
+
 bot.start();
 
-cron.schedule('0 0 20 * * *', async () => {
+// Mon
+cron.schedule('0 20 * * 1', async () => {
+    const data = await retrieveIds();
+    if (data) {
+        for (const id of data) {
+            console.log(id);
+            monForm(id);
+        }
+    }
+}, {
+    timezone: "Asia/Singapore"
+});
+
+// Tues-Thurs
+cron.schedule('0 20 * * 2-4', async () => {
     const data = await retrieveIds();
     if (data) {
         for (const id of data) {
             console.log(id);
             sendForm(id);
+        }
+    }
+}, {
+    timezone: "Asia/Singapore"
+});
+
+// Friday
+cron.schedule('0 20 * * 5', async () => {
+    const data = await retrieveIds();
+    if (data) {
+        for (const id of data) {
+            console.log(id);
+            friForm(id);
+        }
+    }
+}, {
+    timezone: "Asia/Singapore"
+});
+
+// Saturday
+cron.schedule('0 20 * * 6', async () => {
+    const data = await retrieveIds();
+    if (data) {
+        for (const id of data) {
+            console.log(id);
+            satForm(id);
+        }
+    }
+}, {
+    timezone: "Asia/Singapore"
+});
+
+// Sunday
+cron.schedule('0 20 * * 7', async () => {
+    const data = await retrieveIds();
+    if (data) {
+        for (const id of data) {
+            console.log(id);
+            sunForm(id);
         }
     }
 }, {
@@ -330,3 +431,19 @@ const retrieveIds = async (): Promise<number[] | undefined> => {
 const deleteUser = async (chatId: number): Promise<void> => {
     await deleteDoc(doc(db, "users", chatId.toString()));
 }
+
+const welcomeMessage = `🍽️ say HELLO to reseRV 🍝
+
+the reseRV telebot streamlines the existing dining hall meal reservation system by making it more accessible and easy to use.
+
+Use /subscribe to subscribe to the bot, and a poll will be sent to you daily at 8pm.
+
+Click submit once you have answered all 4 polls!
+
+(Please do not double-click the buttons as it may cause the server to crash!)
+
+With just 4 clicks each day, together we can help RVRC reduce food waste!
+
+(/unsubscribe to unsubscribe to the bot)
+
+Reserve with reseRV!`
