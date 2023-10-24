@@ -1,4 +1,4 @@
-import { Bot, InlineKeyboard, } from "grammy";
+import { Bot, Context, InlineKeyboard, SessionFlavor, session, } from "grammy";
 import { collection, doc, setDoc, query, getDocs, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase-config";
 const cron = require('node-cron');
@@ -16,7 +16,29 @@ if (!botToken) {
     throw new Error("API Token not available!");
 }
 
-const bot = new Bot(botToken)
+interface data {
+    breakfastTomorrow: string;
+    dinnerTomorrow: string;
+    breakfastFeedback: string;
+    dinnerFeedback: string;
+    day: string;
+};
+
+type MyContext = Context & SessionFlavor<data>;
+
+const bot = new Bot<MyContext>(botToken);
+
+function initial(): data {
+    return {
+        breakfastTomorrow: "",
+        dinnerTomorrow: "",
+        breakfastFeedback: "",
+        dinnerFeedback: "",
+        day: ""
+    }
+}
+
+bot.use(session({ initial }));
 
 // bot.command("subscribe", async (ctx) => {
 //     await writeChatId(ctx.chat.id);
@@ -44,30 +66,14 @@ bot.command("bottest", ctx => {
 // INIT BOT=========================================================
 
 // DATA=============================================================
-interface data {
-    breakfastTomorrow: string;
-    dinnerTomorrow: string;
-    breakfastFeedback: string;
-    dinnerFeedback: string;
-    day: number;
-};
-
 const submitData = async (data: data, chatId: number) => {
     try {
         const date = new Date()
-        const docRef = doc(db, date.toLocaleDateString().replace(/\//g, "-"), chatId.toString());
+        const docRef = doc(db, date.toLocaleDateString("en-US", { timeZone: "Asia/Singapore" }).replace(/\//g, "-"), chatId.toString());
         await setDoc(docRef, data);
     } catch (e) {
         console.error(e);
     }
-}
-
-let currData: data = {
-    breakfastTomorrow: "",
-    dinnerTomorrow: "",
-    breakfastFeedback: "",
-    dinnerFeedback: "",
-    day: -1
 }
 // DATA=============================================================
 // BREAKFAST===========================================================
@@ -80,21 +86,21 @@ let currData: data = {
 
 bot.callbackQuery("bfast-yes", async (ctx) => {
     console.log("yes");
-    currData.breakfastTomorrow = "yes";
+    ctx.session.breakfastTomorrow = "yes";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Yes");
 });
 
 bot.callbackQuery("bfast-no", async (ctx) => {
     console.log("no");
-    currData.breakfastTomorrow = "no";
+    ctx.session.breakfastTomorrow = "no";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "No");
 });
 
 bot.callbackQuery("bfast-idk", async (ctx) => {
     console.log("idk");
-    currData.breakfastTomorrow = "idk";
+    ctx.session.breakfastTomorrow = "idk";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Don't Know");
 });
@@ -115,21 +121,21 @@ const breakfast = new InlineKeyboard()
 
 bot.callbackQuery("dinner-yes", async (ctx) => {
     console.log("dinner-yes");
-    currData.dinnerTomorrow = "yes";
+    ctx.session.dinnerTomorrow = "yes";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Yes");
 });
 
 bot.callbackQuery("dinner-no", async (ctx) => {
     console.log("dinner-no");
-    currData.dinnerTomorrow = "no";
+    ctx.session.dinnerTomorrow = "no";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "No");
 });
 
 bot.callbackQuery("dinner-idk", async (ctx) => {
     console.log("dinner-idk");
-    currData.dinnerTomorrow = "idk";
+    ctx.session.dinnerTomorrow = "idk";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Don't Know");
 });
@@ -149,49 +155,49 @@ const dinner = new InlineKeyboard()
 
 bot.callbackQuery("bfast-asian", async (ctx) => {
     console.log("bfast-asian");
-    currData.breakfastFeedback = "asian";
+    ctx.session.breakfastFeedback = "asian";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Asian");
 });
 
 bot.callbackQuery("bfast-western", async (ctx) => {
     console.log("bfast-western");
-    currData.breakfastFeedback = "western";
+    ctx.session.breakfastFeedback = "western";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Western");
 });
 
 bot.callbackQuery("bfast-muslim", async (ctx) => {
     console.log("bfast-muslim");
-    currData.breakfastFeedback = "muslim";
+    ctx.session.breakfastFeedback = "muslim";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Muslim");
 });
 
 bot.callbackQuery("bfast-grabngo", async (ctx) => {
     console.log("bfast-grabngo");
-    currData.breakfastFeedback = "grabngo";
+    ctx.session.breakfastFeedback = "grabngo";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Grab and Go");
 });
 
 bot.callbackQuery("bfast-cereal", async (ctx) => {
     console.log("bfast-cereal");
-    currData.breakfastFeedback = "cereal";
+    ctx.session.breakfastFeedback = "cereal";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Cereal");
 });
 
 bot.callbackQuery("bfast-nope", async (ctx) => {
     console.log("bfast-nope");
-    currData.breakfastFeedback = "no";
+    ctx.session.breakfastFeedback = "no";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Did not eat");
 });
 
 bot.callbackQuery("bfast-dk", async (ctx) => {
     console.log("bfast-dk");
-    currData.breakfastFeedback = "idk";
+    ctx.session.breakfastFeedback = "idk";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Forgot what I ate");
 });
@@ -215,56 +221,56 @@ const breakfastFeedback = new InlineKeyboard()
 
 bot.callbackQuery("dinner-asian", async (ctx) => {
     console.log("dinner-asian");
-    currData.dinnerFeedback = "asian";
+    ctx.session.dinnerFeedback = "asian";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Asian");
 });
 
 bot.callbackQuery("dinner-western", async (ctx) => {
     console.log("dinner-western");
-    currData.dinnerFeedback = "western";
+    ctx.session.dinnerFeedback = "western";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Western");
 });
 
 bot.callbackQuery("dinner-muslim", async (ctx) => {
     console.log("dinner-muslim");
-    currData.dinnerFeedback = "muslim";
+    ctx.session.dinnerFeedback = "muslim";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Muslim");
 });
 
 bot.callbackQuery("dinner-indian", async (ctx) => {
     console.log("dinner-indian");
-    currData.dinnerFeedback = "indian";
+    ctx.session.dinnerFeedback = "indian";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Indian");
 });
 
 bot.callbackQuery("dinner-noodles", async (ctx) => {
     console.log("dinner-noodles");
-    currData.dinnerFeedback = "noodles";
+    ctx.session.dinnerFeedback = "noodles";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Noodles");
 });
 
 bot.callbackQuery("dinner-vegetarian", async (ctx) => {
     console.log("dinner-vegetarian");
-    currData.dinnerFeedback = "vegetarian";
+    ctx.session.dinnerFeedback = "vegetarian";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Vegetarian");
 });
 
 bot.callbackQuery("dinner-nope", async (ctx) => {
     console.log("dinner-nope");
-    currData.dinnerFeedback = "no";
+    ctx.session.dinnerFeedback = "no";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Did not eat");
 });
 
 bot.callbackQuery("dinner-dk", async (ctx) => {
     console.log("dinner-dk");
-    currData.dinnerFeedback = "idk";
+    ctx.session.dinnerFeedback = "idk";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Forgot what I ate");
 });
@@ -284,16 +290,10 @@ const dinnerFeedback = new InlineKeyboard()
 const submit = new InlineKeyboard().text("Submit!");
 
 bot.callbackQuery("Submit!", async (ctx) => {
-    currData.day = new Date().getDay();
-    if (ctx.chat) await submitData(currData, ctx.chat.id);
+    ctx.session.day = new Date().toLocaleString("en-US", { timeZone: "Asia/Singapore", weekday: "short" });
+    if (ctx.chat) await submitData(ctx.session, ctx.chat.id);
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
-    currData = {
-        breakfastTomorrow: "",
-        dinnerTomorrow: "",
-        breakfastFeedback: "",
-        dinnerFeedback: "",
-        day: -1
-    }
+    ctx.session = initial();
     if (ctx.chat) ctx.api.sendMessage(ctx.chat.id, "Thanks for your submission!");
 })
 // SUBMIT===========================================================

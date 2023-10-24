@@ -26,42 +26,48 @@ const botToken = process.env.BOT_TOKEN ? process.env.BOT_TOKEN : "";
 if (!botToken) {
     throw new Error("API Token not available!");
 }
+;
 const bot = new grammy_1.Bot(botToken);
-bot.command("subscribe", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield writeChatId(ctx.chat.id);
-    bot.api.sendMessage(ctx.chat.id, "Subscribed to bot!");
-}));
+function initial() {
+    return {
+        breakfastTomorrow: "",
+        dinnerTomorrow: "",
+        breakfastFeedback: "",
+        dinnerFeedback: "",
+        day: ""
+    };
+}
+bot.use((0, grammy_1.session)({ initial }));
+// bot.command("subscribe", async (ctx) => {
+//     await writeChatId(ctx.chat.id);
+//     bot.api.sendMessage(ctx.chat.id, "Subscribed to bot!");
+// });
 bot.command("unsubscribe", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield deleteUser(ctx.chat.id);
     bot.api.sendMessage(ctx.chat.id, "Unsubscribed :(");
 }));
-bot.command("start", ctx => {
-    bot.api.sendMessage(ctx.chat.id, welcomeMessage);
-});
+bot.command("start", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield writeChatId(ctx.chat.id);
+    bot.api.sendMessage(ctx.chat.id, "Subscribed to bot!");
+}));
 bot.command("help", ctx => {
     bot.api.sendMessage(ctx.chat.id, welcomeMessage);
 });
 bot.command("bottest", ctx => {
     sendForm(ctx.chat.id);
 });
-;
+// INIT BOT=========================================================
+// DATA=============================================================
 const submitData = (data, chatId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const date = new Date();
-        const docRef = (0, firestore_1.doc)(firebase_config_1.db, date.toLocaleDateString().replace(/\//g, "-"), chatId.toString());
+        const docRef = (0, firestore_1.doc)(firebase_config_1.db, date.toLocaleDateString("en-US", { timeZone: "Asia/Singapore" }).replace(/\//g, "-"), chatId.toString());
         yield (0, firestore_1.setDoc)(docRef, data);
     }
     catch (e) {
         console.error(e);
     }
 });
-let currData = {
-    breakfastTomorrow: "",
-    dinnerTomorrow: "",
-    breakfastFeedback: "",
-    dinnerFeedback: "",
-    day: -1
-};
 // DATA=============================================================
 // BREAKFAST===========================================================
 // bot.command("bfast", async (ctx) => {
@@ -71,21 +77,21 @@ let currData = {
 // })
 bot.callbackQuery("bfast-yes", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("yes");
-    currData.breakfastTomorrow = "yes";
+    ctx.session.breakfastTomorrow = "yes";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Yes");
 }));
 bot.callbackQuery("bfast-no", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("no");
-    currData.breakfastTomorrow = "no";
+    ctx.session.breakfastTomorrow = "no";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "No");
 }));
 bot.callbackQuery("bfast-idk", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("idk");
-    currData.breakfastTomorrow = "idk";
+    ctx.session.breakfastTomorrow = "idk";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Don't Know");
@@ -103,21 +109,21 @@ const breakfast = new grammy_1.InlineKeyboard()
 // })
 bot.callbackQuery("dinner-yes", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-yes");
-    currData.dinnerTomorrow = "yes";
+    ctx.session.dinnerTomorrow = "yes";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Yes");
 }));
 bot.callbackQuery("dinner-no", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-no");
-    currData.dinnerTomorrow = "no";
+    ctx.session.dinnerTomorrow = "no";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "No");
 }));
 bot.callbackQuery("dinner-idk", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-idk");
-    currData.dinnerTomorrow = "idk";
+    ctx.session.dinnerTomorrow = "idk";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Don't Know");
@@ -135,49 +141,49 @@ const dinner = new grammy_1.InlineKeyboard()
 // })
 bot.callbackQuery("bfast-asian", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("bfast-asian");
-    currData.breakfastFeedback = "asian";
+    ctx.session.breakfastFeedback = "asian";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Asian");
 }));
 bot.callbackQuery("bfast-western", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("bfast-western");
-    currData.breakfastFeedback = "western";
+    ctx.session.breakfastFeedback = "western";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Western");
 }));
 bot.callbackQuery("bfast-muslim", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("bfast-muslim");
-    currData.breakfastFeedback = "muslim";
+    ctx.session.breakfastFeedback = "muslim";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Muslim");
 }));
 bot.callbackQuery("bfast-grabngo", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("bfast-grabngo");
-    currData.breakfastFeedback = "grabngo";
+    ctx.session.breakfastFeedback = "grabngo";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Grab and Go");
 }));
 bot.callbackQuery("bfast-cereal", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("bfast-cereal");
-    currData.breakfastFeedback = "cereal";
+    ctx.session.breakfastFeedback = "cereal";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Cereal");
 }));
 bot.callbackQuery("bfast-nope", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("bfast-nope");
-    currData.breakfastFeedback = "no";
+    ctx.session.breakfastFeedback = "no";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Did not eat");
 }));
 bot.callbackQuery("bfast-dk", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("bfast-dk");
-    currData.breakfastFeedback = "idk";
+    ctx.session.breakfastFeedback = "idk";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Forgot what I ate");
@@ -199,56 +205,56 @@ const breakfastFeedback = new grammy_1.InlineKeyboard()
 // })
 bot.callbackQuery("dinner-asian", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-asian");
-    currData.dinnerFeedback = "asian";
+    ctx.session.dinnerFeedback = "asian";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Asian");
 }));
 bot.callbackQuery("dinner-western", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-western");
-    currData.dinnerFeedback = "western";
+    ctx.session.dinnerFeedback = "western";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Western");
 }));
 bot.callbackQuery("dinner-muslim", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-muslim");
-    currData.dinnerFeedback = "muslim";
+    ctx.session.dinnerFeedback = "muslim";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Muslim");
 }));
 bot.callbackQuery("dinner-indian", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-indian");
-    currData.dinnerFeedback = "indian";
+    ctx.session.dinnerFeedback = "indian";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Indian");
 }));
 bot.callbackQuery("dinner-noodles", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-noodles");
-    currData.dinnerFeedback = "noodles";
+    ctx.session.dinnerFeedback = "noodles";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Noodles");
 }));
 bot.callbackQuery("dinner-vegetarian", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-vegetarian");
-    currData.dinnerFeedback = "vegetarian";
+    ctx.session.dinnerFeedback = "vegetarian";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Vegetarian");
 }));
 bot.callbackQuery("dinner-nope", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-nope");
-    currData.dinnerFeedback = "no";
+    ctx.session.dinnerFeedback = "no";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Did not eat");
 }));
 bot.callbackQuery("dinner-dk", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("dinner-dk");
-    currData.dinnerFeedback = "idk";
+    ctx.session.dinnerFeedback = "idk";
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Forgot what I ate");
@@ -266,22 +272,17 @@ const dinnerFeedback = new grammy_1.InlineKeyboard()
 // SUBMIT===========================================================
 const submit = new grammy_1.InlineKeyboard().text("Submit!");
 bot.callbackQuery("Submit!", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    currData.day = new Date().getDay();
+    ctx.session.day = new Date().toLocaleString("en-US", { timeZone: "Asia/Singapore", weekday: "short" });
     if (ctx.chat)
-        yield submitData(currData, ctx.chat.id);
+        yield submitData(ctx.session, ctx.chat.id);
     ctx.editMessageReplyMarkup({ reply_markup: undefined });
-    currData = {
-        breakfastTomorrow: "",
-        dinnerTomorrow: "",
-        breakfastFeedback: "",
-        dinnerFeedback: "",
-        day: -1
-    };
+    ctx.session = initial();
     if (ctx.chat)
         ctx.api.sendMessage(ctx.chat.id, "Thanks for your submission!");
 }));
 // SUBMIT===========================================================
 const sendForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield bot.api.sendMessage(id, "Remember: please do not double click the buttons!");
     yield bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
     yield bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
     yield bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
@@ -289,23 +290,27 @@ const sendForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
     yield bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit });
 });
 const monForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield bot.api.sendMessage(id, "Remember: please do not double click the buttons!");
     yield bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
     yield bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
     yield bot.api.sendMessage(id, "Did you have dinner yesterday?", { reply_markup: dinnerFeedback });
     yield bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit });
 });
 const friForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield bot.api.sendMessage(id, "Remember: please do not double click the buttons!");
     yield bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
     yield bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
     yield bot.api.sendMessage(id, "Did you have dinner yesterday?", { reply_markup: dinnerFeedback });
     yield bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit });
 });
 const satForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield bot.api.sendMessage(id, "Remember: please do not double click the buttons!");
     yield bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
     yield bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
     yield bot.api.sendMessage(id, "Hit submit when you're done!", { reply_markup: submit });
 });
 const sunForm = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield bot.api.sendMessage(id, "Remember: please do not double click the buttons!");
     yield bot.api.sendMessage(id, "Are you having breakfast tomorrow?", { reply_markup: breakfast });
     yield bot.api.sendMessage(id, "Are you having dinner tomorrow?", { reply_markup: dinner });
     yield bot.api.sendMessage(id, "Did you have breakfast yesterday?", { reply_markup: breakfastFeedback });
@@ -407,7 +412,7 @@ const welcomeMessage = `🍽️ say HELLO to reseRV 🍝
 
 the reseRV telebot streamlines the existing dining hall meal reservation system by making it more accessible and easy to use.
 
-Use /subscribe to subscribe to the bot, and a poll will be sent to you daily at 8pm.
+Use /start to subscribe to the bot, and a poll will be sent to you daily at 8pm.
 
 Click submit once you have answered all 4 polls!
 
@@ -416,5 +421,7 @@ Click submit once you have answered all 4 polls!
 With just 4 clicks each day, together we can help RVRC reduce food waste!
 
 (/unsubscribe to unsubscribe to the bot)
+
+/help to get help!
 
 Reserve with reseRV!`;
