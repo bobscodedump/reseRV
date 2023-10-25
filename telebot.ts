@@ -440,7 +440,7 @@ const deleteUser = async (chatId: number): Promise<void> => {
 
 const welcomeMessage = `🍽️ say HELLO to reseRV 🍝
 
-the reseRV telebot streamlines the existing dining hall meal reservation system by making it more accessible and easy to use.
+the reseRV telebot streamlines the existing dining hall meal reservation system by collecting data on meals. (Meals will not be reserved)
 
 Use /start to subscribe to the bot, and a poll will be sent to you daily at 8pm.
 
