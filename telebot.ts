@@ -7,7 +7,7 @@ const express = require('express');
 
 dotenv.config();
 const app = express();
-const port = 80;
+const port = process.env.PORT || 3000;
 
 // INIT BOT=========================================================
 const botToken = process.env.BOT_TOKEN ? process.env.BOT_TOKEN as string : "";
