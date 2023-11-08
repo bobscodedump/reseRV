@@ -7,7 +7,7 @@ const express = require('express');
 
 dotenv.config();
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 80;
 
 // INIT BOT=========================================================
 const botToken = process.env.BOT_TOKEN ? process.env.BOT_TOKEN as string : "";
@@ -61,6 +61,10 @@ bot.command("help", ctx => {
 
 bot.command("bottest", ctx => {
     sendForm(ctx.chat.id);
+})
+
+bot.command("feedbacktest", ctx => {
+    feedbackForm(ctx.chat.id);
 })
 
 // INIT BOT=========================================================
@@ -340,12 +344,12 @@ const sunForm = async (id: number) => {
 
 bot.start();
 
+/*
 // Mon
 cron.schedule('0 20 * * 1', async () => {
     const data = await retrieveIds();
     if (data) {
         for (const id of data) {
-            console.log(id);
             monForm(id);
         }
     }
@@ -358,7 +362,6 @@ cron.schedule('0 20 * * 2-4', async () => {
     const data = await retrieveIds();
     if (data) {
         for (const id of data) {
-            console.log(id);
             sendForm(id);
         }
     }
@@ -371,7 +374,6 @@ cron.schedule('0 20 * * 5', async () => {
     const data = await retrieveIds();
     if (data) {
         for (const id of data) {
-            console.log(id);
             friForm(id);
         }
     }
@@ -384,7 +386,6 @@ cron.schedule('0 20 * * 6', async () => {
     const data = await retrieveIds();
     if (data) {
         for (const id of data) {
-            console.log(id);
             satForm(id);
         }
     }
@@ -397,13 +398,53 @@ cron.schedule('0 20 * * 7', async () => {
     const data = await retrieveIds();
     if (data) {
         for (const id of data) {
-            console.log(id);
             sunForm(id);
         }
     }
 }, {
     timezone: "Asia/Singapore"
 });
+*/
+
+cron.schedule('0 20 * * 3', async () => {
+    const data = await retrieveIds();
+    if (data) {
+        for (const id of data) {
+
+        }
+    }
+}, {
+    timezone: "Asia/Singapore"
+});
+
+const feedbackForm = async (id: number) => {
+    await bot.api.sendMessage(id, "Thank you so much for engaging in our trial run! Would you use this telegram bot over the dining hall app to make meal reservations?", { reply_markup: feedback });
+}
+
+const feedback = new InlineKeyboard().text("Yes", "yes-feedback").text("No", "no-feedback")
+
+bot.callbackQuery("yes-feedback", async (ctx) => {
+    if (ctx.chat) {
+        submitFeedback("yes", ctx.chat.id);
+        ctx.api.sendMessage(ctx.chat.id, "Thanks for your submission!");
+    }
+})
+
+bot.callbackQuery("no-feedback", async (ctx) => {
+    if (ctx.chat) {
+        submitFeedback("no", ctx.chat.id);
+        ctx.api.sendMessage(ctx.chat.id, "Thanks for your submission!");
+    }
+})
+
+const submitFeedback = async (feedback: string, chatId: number) => {
+    try {
+        const docRef = doc(db, "feedback", chatId.toString());
+        await setDoc(docRef, { feedback: feedback });
+    } catch (e) {
+        console.error(e);
+    }
+}
 
 app.listen(port, () => {
     console.log(`Tele Bot listening on port ${port}`);
